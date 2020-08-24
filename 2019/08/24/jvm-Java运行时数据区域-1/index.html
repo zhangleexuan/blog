@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    
+    <title>
+        jvm-Java运行时数据区域 |
+        
+        轩言轩语</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="java的 动态内存分配 和垃圾回收由jvm虚拟机完成，所以要学习jvm需要先了解java运行时内存模型，即运行时数据区域。jvm是一种规范，不是一款软件，常用的jvm有hotspot&#x2F;openJdk，垃圾回收特别快的商业jvm zing。 程序计数器、本地方法栈、虚拟机栈是线程私有的。堆区、方法区是占用共享内存的。 程序计数器程序计数器记录的是当前当前线程所执行的字节码的行号。由于 Java 虚">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jvm-Java运行时数据区域">
+<meta property="og:url" content="http://zhanglixuan.gitee.io/blog/2019/08/24/jvm-Java%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F-1/index.html">
+<meta property="og:site_name" content="轩言轩语">
+<meta property="og:description" content="java的 动态内存分配 和垃圾回收由jvm虚拟机完成，所以要学习jvm需要先了解java运行时内存模型，即运行时数据区域。jvm是一种规范，不是一款软件，常用的jvm有hotspot&#x2F;openJdk，垃圾回收特别快的商业jvm zing。 程序计数器、本地方法栈、虚拟机栈是线程私有的。堆区、方法区是占用共享内存的。 程序计数器程序计数器记录的是当前当前线程所执行的字节码的行号。由于 Java 虚">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2020/08/24/ID65FzOYPUhpnsT.png">
+<meta property="article:published_time" content="2019-08-24T05:35:00.000Z">
+<meta property="article:modified_time" content="2020-08-24T06:47:42.709Z">
+<meta property="article:author" content="A Zu">
+<meta property="article:tag" content="内存模型">
+<meta property="article:tag" content="运行时区域">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2020/08/24/ID65FzOYPUhpnsT.png">
+    
+    
+    
+        
+            <link rel="stylesheet" href="http://zhanglixuan.gitee.io/blog/css/markdown.css">
+        
+            <link rel="stylesheet" href="http://zhanglixuan.gitee.io/blog/css/july.css">
+        
+    
+<meta name="generator" content="Hexo 5.0.2"></head>
+<body>
+
+<div id="banner-outer" class="hidden">
+    <div id="banner-image" style="background-image: url()"></div>
+    <img src="https://i.loli.net/2020/08/22/C95xcySNA7Rtbja.png" id="avatar">
+</div>
+
+
+<div id="menu-outer">
+    <div id="menu-inner">
+        
+            <a class="false" href="http://zhanglixuan.gitee.io/blog/index.html">Home</a>
+        
+            <a class="false" href="http://zhanglixuan.gitee.io/blog/archives/index.html">Archives</a>
+        
+            <a class="false" href="http://zhanglixuan.gitee.io/blog/about/index.html">About</a>
+        
+		  <a target="_blank" style=" text-shadow:2px 2px 0 rgba(236,144,79, 0.6);color:#FFB5C5" href="http://www.gkdtv.com">gkdtv</a>
+    </div>
+</div>
+
+<div id="content-outer" class="container">
+    <div id="content-inner">
+        <article id="post">
+    <h1 id="post-title">jvm-Java运行时数据区域</h1>
+    <time id="post-date" datetime="2019-08-24T05:35:00.000Z">
+        八月 24, 2019
+    </time>
+    <div id="post-content" class="markdown-body">
+        <h6 id="java的-动态内存分配-和垃圾回收由jvm虚拟机完成，所以要学习jvm需要先了解java运行时内存模型，即运行时数据区域。"><a href="#java的-动态内存分配-和垃圾回收由jvm虚拟机完成，所以要学习jvm需要先了解java运行时内存模型，即运行时数据区域。" class="headerlink" title="java的 动态内存分配 和垃圾回收由jvm虚拟机完成，所以要学习jvm需要先了解java运行时内存模型，即运行时数据区域。"></a>java的 <strong>动态内存分配</strong> 和垃圾回收由jvm虚拟机完成，所以要学习jvm需要先了解java运行时内存模型，即运行时数据区域。</h6><h6 id="jvm是一种规范，不是一款软件，常用的jvm有hotspot-openJdk，垃圾回收特别快的商业jvm-zing。"><a href="#jvm是一种规范，不是一款软件，常用的jvm有hotspot-openJdk，垃圾回收特别快的商业jvm-zing。" class="headerlink" title="jvm是一种规范，不是一款软件，常用的jvm有hotspot/openJdk，垃圾回收特别快的商业jvm zing。"></a>jvm是一种规范，不是一款软件，常用的jvm有hotspot/openJdk，垃圾回收特别快的商业jvm zing。</h6><p><img src="https://i.loli.net/2020/08/24/ID65FzOYPUhpnsT.png" alt="alt Java运行时数据区域" title="Java运行时数据区域"></p>
+<h6 id="程序计数器、本地方法栈、虚拟机栈是线程私有的。"><a href="#程序计数器、本地方法栈、虚拟机栈是线程私有的。" class="headerlink" title="程序计数器、本地方法栈、虚拟机栈是线程私有的。"></a>程序计数器、本地方法栈、虚拟机栈是线程私有的。</h6><h6 id="堆区、方法区是占用共享内存的。"><a href="#堆区、方法区是占用共享内存的。" class="headerlink" title="堆区、方法区是占用共享内存的。"></a>堆区、方法区是占用共享内存的。</h6><ol>
+<li><h6 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h6><p>程序计数器记录的是当前当前线程所执行的字节码的行号。<br>由于 Java 虚拟机的多线程是通过线程轮流切换并分配处理器执行时间的方式来实现的，在任何一个确定的时刻，一个处理器内核都只会执行一条线程中的指令。<br>因此，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各条线程之间计数器互不影响，独立存储，我们称这类内存区域为“线程私有”的内存。</p>
+</li>
+<li><h6 id="Java虚拟机栈"><a href="#Java虚拟机栈" class="headerlink" title="Java虚拟机栈"></a>Java虚拟机栈</h6><p> Java虚拟机栈也是线程私有的，它的生命周期与线程相同。用于存储局部变量表、操作栈、动态链接、方法出口等信息。每一个方法从调用直至执行完成的过程，就对应着一个栈帧在虚拟机栈中入栈到出栈的过程。</p>
+<ol>
+<li><strong>操作栈</strong> 记录了指令集合，拿出那个变量赋值多少等指令集。</li>
+<li><strong>动态链接</strong> 记录了当前方法的对象、变量引用地址。</li>
+<li><strong>方法返回地址</strong>  正常退出return 异常退出 exception ，方法返回地址记录了方法运行完、或异常之后的栈帧地址。</li>
+</ol>
+</li>
+<li><h6 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h6><p> 本地方法栈是jvm为了在不同的操作系统上实现相同的功能，采用汇编或c等底层语言操作系统的方法。在window上就是操作windows的本地方法，在mac上就是操作mac的本地方法，如查看ip地址，时间等。</p>
+</li>
+<li><h6 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h6><p> 堆，是jvm内存中最大的一块，是占用共享变量的。存储了对象实例。jvm调优主要是对这一块调优，在分代堆模型中堆又分为eden（初生代）、S1（青年）、S2（青年）、old（永久代，老年活动中心）。</p>
+</li>
+<li><h6 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h6><p>方法区记录了类加载信息，常量，静态变量数据。</p>
+</li>
+</ol>
+
+    </div>
+</article>
+
+<div id="paginator">
+    
+</div>
+
+    </div>
+</div>
+
+<div id="bottom-outer">
+    <div id="bottom-inner">
+        2019-2020 A Zu 冀ICP备18021483号
+    </div>
+</div>
+
+<div id="to-top">
+    <i class="iconfont icon-up"></i>
+</div>
+
+
+    
+        <script src="http://zhanglixuan.gitee.io/blog/js/jquery-3.4.1.min.js"></script>
+    
+        <script src="http://zhanglixuan.gitee.io/blog/js/highlight-9.13.1.min.js"></script>
+    
+        <script src="http://zhanglixuan.gitee.io/blog/js/transition.js"></script>
+    
+        <script src="http://zhanglixuan.gitee.io/blog/js/smooth-scroll.min.js"></script>
+    
+
+
+
+    <script>
+      $(function () {
+        $('#banner-outer').addClass('fade-out')
+        $('#menu-outer').addClass('fade-show')
+
+        $('pre').each(function (i, block) {
+          hljs.highlightBlock(block);
+        });
+      })
+    </script>
+
+
+<script>
+  $(function () {
+    $(window).scroll(function () {
+      if ($(window).scrollTop() > 150) {
+        $("#to-top").fadeIn();
+      } else {
+        $("#to-top").fadeOut();
+      }
+    });
+    $("#to-top").click(function () {
+      $("body,html").animate({scrollTop: 0}, 500);
+      return false;
+    })
+  })
+</script>
+</body>
+</html>
