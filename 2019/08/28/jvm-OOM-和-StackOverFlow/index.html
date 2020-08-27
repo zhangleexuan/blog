@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    
+    <title>
+        jvm-OOM 和 StackOverFlow |
+        
+        阿祖の神秘世界</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OOMOOM是Out of memory的缩写，异常信息为java.lang.OutOfMemoryError。 一般OOM会有以下几种情况： OutOfMemoryError： PermGen space发生这种问题的原意是程序中使用了大量的jar或class，使java虚拟机装载类的空间不够，与Permanent Generation space有关。 OutOfMemoryError：  J">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jvm-OOM 和 StackOverFlow">
+<meta property="og:url" content="http://zhanglixuan.com/2019/08/28/jvm-OOM-%E5%92%8C-StackOverFlow/index.html">
+<meta property="og:site_name" content="阿祖の神秘世界">
+<meta property="og:description" content="OOMOOM是Out of memory的缩写，异常信息为java.lang.OutOfMemoryError。 一般OOM会有以下几种情况： OutOfMemoryError： PermGen space发生这种问题的原意是程序中使用了大量的jar或class，使java虚拟机装载类的空间不够，与Permanent Generation space有关。 OutOfMemoryError：  J">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-28T09:51:00.000Z">
+<meta property="article:modified_time" content="2020-08-27T09:55:30.834Z">
+<meta property="article:author" content="阿祖">
+<meta name="twitter:card" content="summary">
+    
+    
+    
+        
+            <link rel="stylesheet" href="http://zhanglixuan.com/css/markdown.css">
+        
+            <link rel="stylesheet" href="http://zhanglixuan.com/css/july.css">
+        
+    
+<meta name="generator" content="Hexo 5.0.2"></head>
+<body>
+
+<div id="banner-outer" class="hidden">
+    <div id="banner-image" style="background-image: url()"></div>
+    <img src="https://i.loli.net/2020/08/22/C95xcySNA7Rtbja.png" id="avatar">
+</div>
+
+
+<div id="menu-outer">
+    <div id="menu-inner">
+        
+            <a class="false" href="http://zhanglixuan.com/index.html">Home</a>
+        
+            <a class="false" href="http://zhanglixuan.com/archives/index.html">Archives</a>
+        
+            <a class="false" href="http://zhanglixuan.com/about/index.html">About</a>
+        
+		  <a target="_blank" style=" text-shadow:2px 2px 0 rgba(236,144,79, 0.6);color:#FFB5C5" href="http://www.gkdtv.com">gkdtv</a>
+    </div>
+</div>
+
+<div id="content-outer" class="container">
+    <div id="content-inner">
+        <article id="post">
+    <h1 id="post-title">jvm-OOM 和 StackOverFlow</h1>
+    <time id="post-date" datetime="2019-08-28T09:51:00.000Z">
+        八月 28, 2019
+    </time>
+    <div id="post-content" class="markdown-body">
+        <h2 id="OOM"><a href="#OOM" class="headerlink" title="OOM"></a>OOM</h2><p>OOM是Out of memory的缩写，异常信息为java.lang.OutOfMemoryError。</p>
+<p>一般OOM会有以下几种情况：</p>
+<h4 id="OutOfMemoryError：-PermGen-space"><a href="#OutOfMemoryError：-PermGen-space" class="headerlink" title="OutOfMemoryError： PermGen space"></a>OutOfMemoryError： PermGen space</h4><p>发生这种问题的原意是程序中使用了大量的jar或class，使java虚拟机装载类的空间不够，与Permanent Generation space有关。</p>
+<h4 id="OutOfMemoryError：-Java-heap-space"><a href="#OutOfMemoryError：-Java-heap-space" class="headerlink" title="OutOfMemoryError：  Java heap space"></a>OutOfMemoryError：  Java heap space</h4><p>发生这种问题的原因是java虚拟机创建的对象太多，在进行垃圾回收之间，虚拟机分配的到堆内存空间已经用满了，与Heap space有关</p>
+<h4 id="OutOfMemoryError：unable-to-create-new-native-thread"><a href="#OutOfMemoryError：unable-to-create-new-native-thread" class="headerlink" title="OutOfMemoryError：unable to create new native thread"></a>OutOfMemoryError：unable to create new native thread</h4><p>可能的原因：</p>
+<p>你的应用创建了太多线程，一个应用进程创建多个线程，超过系统承载极限<br>你的服务器不允许你的应用程序创建这么多线程，linux系统默认允许单个进程可以创建的线程数是1024个</p>
+<h4 id="java-lang-OutOfMemoryError-GC-overhead-limit-exceedec"><a href="#java-lang-OutOfMemoryError-GC-overhead-limit-exceedec" class="headerlink" title="java.lang.OutOfMemoryError:GC overhead limit exceedec"></a>java.lang.OutOfMemoryError:GC overhead limit exceedec</h4><p>GC回收时间过长时会抛出该异常<br>过长的定义是，超过98%的时间用来做GC并且回收了不到2%的堆内存。连续多次GC都只回收了不到2%的极端情况下才会抛出。<br>避免恶性循环 浪费CPU性能</p>
+<h4 id="java-lang-OutOfMemoryError-Metaspce"><a href="#java-lang-OutOfMemoryError-Metaspce" class="headerlink" title="java.lang.OutOfMemoryError:Metaspce"></a>java.lang.OutOfMemoryError:Metaspce</h4><p>Java 8 之后的版本使用metaspace 来替代永久代<br>metaspace 是方法区在HotSpot中的实现，它与永久代最大的区别在于：metaspace并不在虚拟机内存中而是使用本地内存<br>存储信息如下：</p>
+<p>虚拟机加载的类信息<br>常量池<br>静态变量<br>即时编译后的代码</p>
+<h2 id="StackOverFlow"><a href="#StackOverFlow" class="headerlink" title="StackOverFlow"></a>StackOverFlow</h2><p>StackOverflowError代表的是，当栈深度超过虚拟机分配给线程的栈大小时就会出现此error。跟jvm的-Xss相关。</p>
+<blockquote>
+<p>如：</p>
+</blockquote>
+<p>一个递归程序，代码逻辑问题导致递归无法跳出，必然会出现StackOverflow异常。</p>
+
+    </div>
+</article>
+
+<div id="paginator">
+    
+</div>
+
+    </div>
+</div>
+
+<div id="bottom-outer">
+    <div id="bottom-inner">
+        2019-2020 阿祖 冀ICP备18021483号
+    </div>
+</div>
+
+<div id="to-top">
+    <i class="iconfont icon-up"></i>
+</div>
+
+
+    
+        <script src="http://zhanglixuan.com/js/jquery-3.4.1.min.js"></script>
+    
+        <script src="http://zhanglixuan.com/js/highlight-9.13.1.min.js"></script>
+    
+        <script src="http://zhanglixuan.com/js/transition.js"></script>
+    
+        <script src="http://zhanglixuan.com/js/smooth-scroll.min.js"></script>
+    
+
+
+
+    <script>
+      $(function () {
+        $('#banner-outer').addClass('fade-out')
+        $('#menu-outer').addClass('fade-show')
+
+        $('pre').each(function (i, block) {
+          hljs.highlightBlock(block);
+        });
+      })
+    </script>
+
+
+<script>
+  $(function () {
+    $(window).scroll(function () {
+      if ($(window).scrollTop() > 150) {
+        $("#to-top").fadeIn();
+      } else {
+        $("#to-top").fadeOut();
+      }
+    });
+    $("#to-top").click(function () {
+      $("body,html").animate({scrollTop: 0}, 500);
+      return false;
+    })
+  })
+</script>
+</body>
+</html>
